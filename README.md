@@ -38,6 +38,12 @@ Sistema web integral diseñado para optimizar el control de stock, ventas y prov
 
 ---
 
+### 🤖 Análisis de Reportes con IA / AI Report Analysis
+![Reportes IA](img/SecciónReportesIA.png)
+*Generación de informes inteligentes utilizando la tecnología de Google Gemini.*
+
+---
+
 ## 📋 Documentación / Documentation
 
 **ES:** El proyecto cuenta con un informe técnico detallado (PDF) en la carpeta `/docs`.
@@ -45,3 +51,4 @@ Sistema web integral diseñado para optimizar el control de stock, ventas y prov
 
 ---
 *Proyecto desarrollado por / Developed by:* **Adonis Llerena** *Estudiante de Ingeniería Informática / Computer Engineering Student*
+
