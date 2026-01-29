@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Historial de Transferencias{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center fw-bold" style="color: black;">📦 Historial de Transferencias</h2>
+
+    {% if transferencias %}
+    <div class="table-responsive shadow-sm rounded-3">
+        <table class="table table-hover align-middle text-center">
+            <thead class="table-primary">
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Total Productos</th>
+                    <th>Total Cantidad</th>
+                    <th>Observaciones</th>
+                    <th>Aciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transferencias %}
+                <tr>
+                    <td><span class="badge bg-secondary">{{ t.id }}</span></td>
+                    <td>{{ t.fecha.strftime('%Y-%m-%d %H:%M') if t.fecha else '—' }}</td>
+                    <td><strong class="text-success">{{ t.origen or '—' }}</strong></td>
+                    <td><strong class="text-danger">{{ t.destino or '—' }}</strong></td>
+                    <td>{{ t.total_productos or 0 }}</td>
+                    <td>{{ t.total_cantidad or 0 }}</td>
+                    <td>{{ t.observaciones or '—' }}</td>
+                    <td><form action="{{ url_for('eliminar_transferencia', id=t.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar esta transferencia?')">
+                            🗑️ Eliminar
+                        </button>
+                    </form></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center mt-4" role="alert">
+        ⚠️ No hay transferencias registradas todavía.
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('bodegas') }}" class="btn btn-outline-primary btn-lg">
+            🔙 Volver a Bodega
+        </a>
+    </div>
+</div>
+
+<style>
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    table th {
+        background-color: #77abff !important;
+        color: white;
+    }
+
+    tr:hover {
+        background-color: #f1f9ff;
+    }
+
+    .table {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}

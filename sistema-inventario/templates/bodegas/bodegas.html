@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">🏭 Inventario de Bodega</h2>
+
+    <div class="card shadow-sm p-3 mb-4">
+        <div class="card-body">
+            <table class="table table-bordered table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Producto</th>
+                        <th>Descripción</th>
+                        <th>Cantidad</th>
+                        <th>Precio compra</th>
+                        <th>Precio producto</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in inventario %}
+                    <tr>
+                        <td>{{ item.id_producto }}</td>
+                        <td>{{ item.nombre }}</td>
+                        <td>{{ item.descripcion }}</td>
+                        <td>{{ item.cantidad }}</td>
+                        <td>${{ "%.2f"|format(item.precio_compra or 0) }}</td>
+                        <td>${{ "%.2f"|format(item.precio_producto or 0) }}</td>
+                        <td class="text-center">
+                            <div class="btn-group" role="group">
+                                <!-- Botón Transferir -->
+                                <a href="{{ url_for('transferir') }}" class="btn btn-sm btn-primary" title="Transferir producto">
+                                    🔄 Transferir
+                                </a>
+                        
+                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#editarPrecioModal{{ item.id_producto }}">
+                                ✏️ Editar precio
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal editar precio -->
+                    <div class="modal fade" id="editarPrecioModal{{ item.id_producto }}" tabindex="-1"
+                        aria-labelledby="editarPrecioLabel{{ item.id_producto }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('editar_precio_bodega', id_producto=item.id_producto) }}">
+                                    <div class="modal-header bg-dark text-white">
+                                        <h5 class="modal-title" id="editarPrecioLabel{{ item.id_producto }}">
+                                            Editar precio de {{ item.nombre }}
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white"
+                                            data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Precio actual</label>
+                                            <input type="text" class="form-control" value="${{ "%.2f"|format(item.precio_producto or 0) }}" disabled>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Nuevo precio</label>
+                                            <input type="number" step="0.01" name="nuevo_precio" class="form-control"
+                                                value="{{ item.precio_producto or 0 }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-success">Guardar cambios</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Total inventario -->
+            <div class="mt-4 text-end">
+                {% set total = 0 %}
+                {% for item in inventario %}
+                    {% set total = total + (item.cantidad or 0) * (item.precio_producto or 0) %}
+                {% endfor %}
+                <h5 class="fw-bold">💰 Total inventario (valor estimado): 
+                    <span style="color: green;">${{ "%.2f"|format(total_valor) }}</span>
+                </h5>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

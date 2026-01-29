@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4 fw-bold" style="color: black;">🚚 Nueva Transferencia desde Bodega</h2>
+
+  <form method="POST" action="{{ url_for('realizar_transferencia') }}">
+    <!-- Seleccionar destino -->
+    <div class="mb-3">
+      <label for="destino" class="form-label fw-semibold">Seleccionar local destino:</label>
+      <select name="id_destino" id="destino" class="form-select" required>
+        <option value="">-- Seleccione un local --</option>
+        {% for local in locales %}
+          <option value="{{ local.id }}">{{ local.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Tabla dinámica de productos -->
+    <h5 class="fw-semibold mt-4">Productos a transferir:</h5>
+    <table class="table table-bordered mt-3" id="tabla-productos">
+      <thead class="table-light">
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad disponible</th>
+          <th>Cantidad a transferir</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <select name="productos[]" class="form-select producto" required>
+              <option value="">-- Seleccione un producto --</option>
+              {% for p in productos %}
+                <option value="{{ p.id }}" data-stock="{{ p.cantidad }}">{{ p.nombre }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td class="text-center stock">0</td>
+          <td><input type="number" name="cantidades[]" class="form-control" min="1" required></td>
+          <td class="text-center">
+            <button type="button" class="btn btn-danger btn-sm eliminar">🗑</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button type="button" class="btn btn-secondary mt-2" id="agregar-fila">➕ Agregar producto</button>
+
+    <!-- Observaciones -->
+    <div class="mt-4">
+      <label for="observaciones" class="form-label fw-semibold">Observaciones:</label>
+      <textarea name="observaciones" id="observaciones" class="form-control" rows="3"></textarea>
+    </div>
+
+    <div class="text-center mt-4">
+      <button type="submit" class="btn btn-primary px-4">✅ Confirmar Transferencia</button>
+    </div>
+  </form>
+</div>
+
+<script>
+// Actualiza el stock visible cuando se selecciona un producto
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('producto')) {
+    const option = e.target.selectedOptions[0];
+    const stock = option.getAttribute('data-stock') || 0;
+    e.target.closest('tr').querySelector('.stock').textContent = stock;
+  }
+});
+
+// Agregar nueva fila
+document.getElementById('agregar-fila').addEventListener('click', () => {
+  const tabla = document.querySelector('#tabla-productos tbody');
+  const fila = tabla.rows[0].cloneNode(true);
+  fila.querySelectorAll('input, select').forEach(el => el.value = '');
+  fila.querySelector('.stock').textContent = '0';
+  tabla.appendChild(fila);
+});
+
+// Eliminar fila
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('eliminar')) {
+    const filas = document.querySelectorAll('#tabla-productos tbody tr');
+    if (filas.length > 1) e.target.closest('tr').remove();
+  }
+});
+</script>
+{% endblock %}

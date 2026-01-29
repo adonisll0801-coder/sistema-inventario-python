@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">🏬 Gestión de Locales</h2>
+
+    <!-- Formulario para añadir un nuevo local -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title">➕ Agregar nuevo local</h5>
+            <form method="POST" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Nombre del local</label>
+                    <input type="text" name="nombre" class="form-control" placeholder="Ej: Local Centro" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Dirección</label>
+                    <input type="text" name="direccion" class="form-control" placeholder="Ej: Calle 10 #23-45" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="telefono" class="form-control" placeholder="Ej: 3214567890">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">Agregar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de locales con inventarios -->
+    <div class="accordion" id="accordionLocales">
+        {% for local in locales %}
+        <div class="accordion-item mb-2">
+            <h2 class="accordion-header" id="heading{{ local.id }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ local.id }}">
+                    🏠 {{ local.nombre }} 
+                    <small class="ms-2 text-muted">| 📍 {{ local.direccion }} | 📞 {{ local.telefono or 'Sin teléfono' }}</small>
+                </button>
+            </h2>
+            <div id="collapse{{ local.id }}" class="accordion-collapse collapse" data-bs-parent="#accordionLocales">
+                <div class="accordion-body">
+                    {% set inventario = inventarios[local.id] %}
+                    {% if inventario %}
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>Producto</th>
+                                <th>Precio</th>
+                                <th>Cantidad</th>
+                                <th>Valor total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            {% set total_local = 0 %}
+                            {% for item in inventario %}
+                                {% set total_local = total_local + (item.valor_total or 0) %}
+                                <tr>
+                                    <td>{{ item.producto }}</td>
+                                    <td>${{ "%.2f"|format(item.precio_venta or 0) }}</td>
+                                    <td>{{ item.cantidad_total }}</td>
+                                    <td>${{ "%.2f"|format(item.valor_total or 0) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <!-- Total por local -->
+                    <div class="text-end mt-2">
+                        <h6 class="fw-bold">
+                            💰 Total inventario de {{local.nombre}}: 
+                            <span style="color: green;">
+                                ${{ "%.2f"|format(totales_local[local.id]) }}
+                            </span>
+                        </h6>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">📦 Este local no tiene productos en inventario.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

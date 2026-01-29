@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4 fw-bold text-dark">🏷️ Visor de Productos</h2>
+
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="mb-0">Inventario General</h5>
+        </div>
+        <div class="card-body p-4">
+            
+            <div class="table-responsive">
+                <table class="table table-hover table-striped" id="tabla-productos-visor">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre del Producto</th>
+                            <th>Descripción</th>
+                            <th>Categoría</th>
+                            
+                            <th class="text-end">Precio Venta</th>
+                            <th class="text-center">Stock Global</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr>
+                            <td>{{ producto.id }}</td>
+                            <td class="fw-semibold">{{ producto.nombre }}</td>
+                            <td>{{ producto.descripcion }}</td>
+                            <td>{{ producto.categoria_nombre }}</td>
+                            
+                            <td class="text-end fw-bold text-success">${{ '{:,.2f}'.format(producto.precio_venta) }}</td>
+                            <td class="text-center">{{ producto.stock_global }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if not productos %}
+            <div class="alert alert-info text-center mt-3" role="alert">
+                No se encontraron productos en el inventario.
+            </div>
+            {% endif %}
+
+            <div class="mt-4 text-center">
+                <small class="text-muted">Esta vista es de solo lectura y no permite modificaciones.</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

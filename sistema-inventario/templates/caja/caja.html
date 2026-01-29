@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4 fw-bold" style="color: black;">💵 Registrar Venta (Caja)</h2>
+
+  <!-- [CAMBIO 1] Añadido id="form-venta" al formulario -->
+  <form method="POST" action="{{ url_for('registrar_venta') }}" id="form-venta">
+    
+    <!-- El select de local ya pasa el id_local, eso está bien -->
+    <div class="mb-3">
+      <label for="local" class="form-label fw-semibold">Seleccionar local:</label>
+      <select name="id_local" id="local" class="form-select" required
+        onchange="if(this.value) { window.location.href = '/caja/' + this.value; }">
+        <option value="">-- Seleccione un local --</option>
+        {% for local in locales %}
+        <option value="{{ local.id }}" {% if id_local|int == local.id %}selected{% endif %}>{{ local.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Tabla dinámica de productos -->
+    <h5 class="fw-semibold mt-4">Productos a vender:</h5>
+    <table class="table table-bordered mt-3" id="tabla-productos">
+      <!-- ... (thead sigue igual) ... -->
+      <thead class="table-light">
+        <tr>
+          <th>Producto</th>
+          <th>Precio</th>
+          <th>Stock disponible</th>
+          <th>Cantidad</th>
+          <th>Subtotal</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="position: relative;">
+            <input type="text" class="form-control producto" placeholder="Buscar producto..." autocomplete="off">
+            <div class="sugerencias position-absolute bg-white border rounded w-100"
+                style="max-height: 150px; overflow-y: auto; z-index: 1000; display: none;"></div>
+            <!-- Este input 'productos[]' ya no es necesario para la lógica de JSON -->
+            <input type="hidden" class="id_producto"> 
+          </td>
+          <td class="precio text-center">0</td>
+          <td class="stock text-center">0</td>
+          <!-- El 'name' se asignará dinámicamente, pero no lo usaremos para el JSON -->
+          <td><input type="number" class="form-control text-center cantidad" min="1" value="1"></td>
+          <td class="subtotal text-center">0</td>
+          <td class="text-center"><button type="button" class="btn btn-danger btn-sm eliminar">🗑</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button type="button" class="btn btn-secondary mt-2" id="agregar-fila">➕ Agregar producto</button>
+
+    <!-- Total general -->
+    <div class="text-end mt-4">
+      <h5 class="fw-bold">
+        💰 Total venta: <span id="totalVenta" class="text-success">$0.00</span>
+      </h5>
+      
+      <!-- [CAMBIO 2] Inputs ocultos para enviar el JSON y el Total a app.py -->
+      <input type="hidden" name="detalle_venta_data" id="detalle_venta_data">
+      <input type="hidden" name="total_venta" id="total_venta_input">
+      
+      <button type="submit" class="btn btn-primary px-4">✅ Confirmar Venta</button>
+    </div>
+  </form>
+</div>
+
+<!-- [CAMBIO 3] Script actualizado -->
+<script>
+// === VARIABLES GLOBALES ===
+const productos = [
+  {% for p in productos %}
+    { 
+      id: {{ p.id }}, 
+      nombre: {{ p.nombre|tojson }}, 
+      precio: {{ p.precio }}, 
+      stock: {{ p.stock }} 
+    }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+
+// === BUSCADOR ===
+document.addEventListener('input', e => {
+  if (e.target.classList.contains('producto')) {
+    const valor = e.target.value.toLowerCase();
+    const contenedor = e.target.closest('td').querySelector('.sugerencias');
+    contenedor.innerHTML = '';
+
+    if (valor.length === 0) {
+      contenedor.style.display = 'none';
+      return;
+    }
+    const coincidencias = productos.filter(p => p.nombre.toLowerCase().includes(valor));
+    if (coincidencias.length > 0) {
+      contenedor.style.display = 'block';
+      coincidencias.forEach(p => {
+        const div = document.createElement('div');
+        div.textContent = `${p.nombre} (${p.stock} en stock)`;
+        div.className = 'p-2 sugerencia-item';
+        div.style.cursor = 'pointer';
+        div.addEventListener('click', () => seleccionarProducto(e.target, p));
+        contenedor.appendChild(div);
+      });
+    } else {
+      contenedor.style.display = 'block';
+      contenedor.innerHTML = '<div class="p-2 text-muted">Sin resultados</div>';
+    }
+  }
+
+  if (e.target.classList.contains('cantidad')) {
+    const fila = e.target.closest('tr');
+    const precio = parseFloat(fila.querySelector('.precio').textContent) || 0;
+    const cantidad = parseInt(e.target.value) || 0;
+    
+    // Validar stock
+    const stockMax = parseInt(fila.querySelector('.stock').textContent) || 0;
+    if (cantidad > stockMax) {
+        e.target.value = stockMax; // Limitar al stock
+    }
+    
+    fila.querySelector('.subtotal').textContent = (precio * (e.target.value || 0)).toFixed(2);
+    actualizarTotal();
+  }
+});
+
+// === SELECCIONAR PRODUCTO  ===
+function seleccionarProducto(input, producto) {
+  const fila = input.closest('tr');
+  const contenedor = input.closest('td').querySelector('.sugerencias');
+
+  input.value = producto.nombre;
+  fila.querySelector('.id_producto').value = producto.id; // Guardamos el ID en el hidden
+  fila.querySelector('.precio').textContent = producto.precio.toFixed(2);
+  fila.querySelector('.stock').textContent = producto.stock;
+  fila.querySelector('.subtotal').textContent = producto.precio.toFixed(2);
+
+  const inputCantidad = fila.querySelector('.cantidad');
+  inputCantidad.value = 1; // Resetea a 1
+  inputCantidad.max = producto.stock; 
+  inputCantidad.name = `cantidad_${producto.id}`; // Mantenemos esto por si acaso
+
+  contenedor.style.display = 'none';
+  actualizarTotal();
+}
+
+// === AGREGAR NUEVA FILA  ===
+document.getElementById('agregar-fila').addEventListener('click', () => {
+  const tabla = document.querySelector('#tabla-productos tbody');
+  const nuevaFila = tabla.rows[0].cloneNode(true);
+
+  nuevaFila.querySelectorAll('input').forEach(input => input.value = '');
+  nuevaFila.querySelector('.precio').textContent = '0';
+  nuevaFila.querySelector('.stock').textContent = '0';
+  nuevaFila.querySelector('.subtotal').textContent = '0';
+
+  const inputCantidad = nuevaFila.querySelector('.cantidad');
+  inputCantidad.name = ''; 
+  inputCantidad.value = '1';
+  inputCantidad.removeAttribute('max');
+
+  const sugerenciasDiv = nuevaFila.querySelector('.sugerencias');
+  if (sugerenciasDiv) sugerenciasDiv.innerHTML = '';
+  sugerenciasDiv.style.display = 'none';
+
+  tabla.appendChild(nuevaFila);
+});
+
+// === ELIMINAR FILA  ===
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('eliminar')) {
+    const filas = document.querySelectorAll('#tabla-productos tbody tr');
+    if (filas.length > 1) {
+      e.target.closest('tr').remove();
+    } else {
+      // Resetear la última fila
+      const fila = filas[0];
+      fila.querySelector('.id_producto').value = '';
+      fila.querySelector('.producto').value = '';
+      fila.querySelector('.precio').textContent = '0';
+      fila.querySelector('.stock').textContent = '0';
+      fila.querySelector('.subtotal').textContent = '0';
+      const inputCantidad = fila.querySelector('.cantidad');
+      inputCantidad.name = '';
+      inputCantidad.value = '1';
+      inputCantidad.removeAttribute('max');
+      const sugerenciasDiv = fila.querySelector('.sugerencias');
+      if (sugerenciasDiv) sugerenciasDiv.innerHTML = '';
+    }
+    actualizarTotal();
+  }
+});
+
+// === ACTUALIZAR TOTAL GENERAL  ===
+function actualizarTotal() {
+  let total = 0;
+  document.querySelectorAll('.subtotal').forEach(td => {
+    total += parseFloat(td.textContent) || 0;
+  });
+  
+  // Actualizar el texto visible
+  document.getElementById('totalVenta').textContent = '$' + total.toFixed(2);
+  
+  // [NUEVO] Actualizar el input oculto para el formulario
+  const totalVentaInput = document.getElementById('total_venta_input');
+  if (totalVentaInput) {
+      totalVentaInput.value = total.toFixed(2);
+  }
+}
+
+// === [NUEVO] INTERCEPTOR DE ENVÍO DE FORMULARIO ===
+document.getElementById('form-venta').addEventListener('submit', function(event) {
+    // 1. Recolectar datos de la tabla
+    const detalle = [];
+    const filas = document.querySelectorAll('#tabla-productos tbody tr');
+    let hayProductosValidos = false;
+
+    filas.forEach(fila => {
+        const idProducto = fila.querySelector('.id_producto').value;
+        const cantidad = parseInt(fila.querySelector('.cantidad').value);
+        const precio = parseFloat(fila.querySelector('.precio').textContent);
+
+        if (idProducto && cantidad > 0 && precio > 0) {
+            detalle.push({
+                id: idProducto,
+                cantidad: cantidad,
+                precio: precio
+                // app.py espera 'id', 'cantidad', y 'precio'
+            });
+            hayProductosValidos = true;
+        }
+    });
+
+    // 2. Validar que haya productos
+    if (!hayProductosValidos) {
+        alert('No hay productos válidos en la venta. Por favor, añada al menos un producto.');
+        event.preventDefault(); // Detener el envío del formulario
+        return;
+    }
+
+    // 3. Convertir a JSON y adjuntar al formulario
+    document.getElementById('detalle_venta_data').value = JSON.stringify(detalle);
+    
+    // 4. El formulario se envía...
+});
+
+</script>
+{% endblock %}

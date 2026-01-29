@@ -1,0 +1,116 @@
+<!-- =======================
+     MODAL CATEGORÍAS
+======================= -->
+<div class="modal fade" id="modalCategoria" tabindex="-1" aria-labelledby="modalCategoriaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalCategoriaLabel">📂 Gestionar Categorías</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- FORMULARIO AGREGAR CATEGORÍA -->
+        <form action="/categorias" method="POST" class="d-flex gap-2 mb-3">
+          <input type="text" name="nombre" class="form-control" placeholder="Nueva categoría" required>
+          <button type="submit" class="btn btn-success">Agregar</button>
+        </form>
+
+        <!-- LISTADO DE CATEGORÍAS -->
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in categorias %}
+            <tr>
+              <td>{{ c.id }}</td>
+              <td>
+                <form action="/editar_categoria/{{ c.id }}" method="POST" class="d-flex gap-2">
+                  <input type="text" name="nombre" value="{{ c.nombre }}" class="form-control">
+                  <button type="submit" class="btn btn-warning btn-sm">Editar</button>
+                </form>
+              </td>
+              <td>
+                <a href="/eliminar_categoria/{{ c.id }}" class="btn btn-danger btn-sm"
+                   onclick="return confirm('¿Seguro que deseas eliminar esta categoría?')">
+                   Eliminar
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =======================
+     MODAL PROVEEDORES
+======================= -->
+<div class="modal fade" id="modalProveedor" tabindex="-1" aria-labelledby="modalProveedorLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalProveedorLabel">🏢 Gestionar Proveedores</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- FORMULARIO AGREGAR PROVEEDOR -->
+        <form action="/proveedores" method="POST" class="row g-2 mb-3">
+          <div class="col-md-3"><input type="text" name="nombre" class="form-control" placeholder="Nombre" required></div>
+          <div class="col-md-2"><input type="text" name="telefono" class="form-control" placeholder="Teléfono"></div>
+          <div class="col-md-3"><input type="email" name="email" class="form-control" placeholder="Correo"></div>
+          <div class="col-md-3"><input type="text" name="direccion" class="form-control" placeholder="Dirección"></div>
+          <div class="col-md-1"><button type="submit" class="btn btn-success w-100">Agregar</button></div>
+        </form>
+
+        <!-- LISTADO DE PROVEEDORES -->
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Dirección</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in proveedores %}
+            <tr>
+              <form action="/editar_proveedor/{{ p.id }}" method="POST" class="d-flex">
+                <td>{{ p.id }}</td>
+                <td><input type="text" name="nombre" value="{{ p.nombre }}" class="form-control"></td>
+                <td><input type="text" name="telefono" value="{{ p.telefono }}" class="form-control"></td>
+                <td><input type="email" name="email" value="{{ p.email }}" class="form-control"></td>
+                <td><input type="text" name="direccion" value="{{ p.direccion }}" class="form-control"></td>
+                <td class="d-flex gap-2">
+                  <button type="submit" class="btn btn-warning btn-sm">Editar</button>
+                  <a href="/eliminar_proveedor/{{ p.id }}" class="btn btn-danger btn-sm"
+                     onclick="return confirm('¿Seguro que deseas eliminar este proveedor?')">Eliminar</a>
+                </td>
+              </form>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

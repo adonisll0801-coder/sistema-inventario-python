@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h2 class="text-center mb-4 fw-bold" style="color: black;">
+                🤖 Análisis de Inventario con IA
+            </h2>
+            <p class="text-center text-muted mb-4">
+                Realiza preguntas en lenguaje natural sobre tu inventario, ventas o stock. 
+                La IA analizará todos los datos de la base de datos para darte una respuesta interpretada.
+            </p>
+
+            <!-- Formulario de Pregunta -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('analizar') }}" id="form-analisis">
+                        <div class="mb-3">
+                            <label for="prompt" class="form-label fw-semibold">Tu Pregunta:</label>
+                            <textarea class="form-control" id="prompt" name="prompt" rows="3" 
+                                      placeholder="Ej: ¿Qué productos tienen stock crítico (menos de 10 unidades) y dónde están?">{{ prompt_actual or '' }}</textarea>
+                            <div class="form-text">
+                                Prueba también: "¿Cuáles fueron los 3 productos más vendidos recientemente?" o "¿Cuánto gasté en compras de 'Teclados'?"
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary btn-lg px-4" id="btn-analizar">
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                Analizar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Área de Respuesta -->
+            {% if resultado %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white fw-bold">
+                    Respuesta del Analista (IA)
+                </div>
+                <div classs="card-body p-3" style="white-space: pre-wrap; background-color: #fdfdfd; font-family: 'Inter', sans-serif; line-height: 1.6;">
+                    {{ resultado }}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Script para mostrar el spinner de carga mientras Gemini piensa
+    document.getElementById('form-analisis').addEventListener('submit', function() {
+        const btn = document.getElementById('btn-analizar');
+        const spinner = btn.querySelector('.spinner-border');
+        
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        // Usamos .lastChild para cambiar el texto "Analizar" sin afectar el spinner
+        btn.lastChild.textContent = ' Analizando...';
+    });
+</script>
+{% endblock %}

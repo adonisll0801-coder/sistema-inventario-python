@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4 fw-bold" style="color: black;">📈 Registro de Ventas</h2>
+
+    <!-- Mensajes Flash de Flask -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title fw-semibold">Ventas Totales Registradas</h5>
+            
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mt-3" id="tabla-ventas">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID Venta</th>
+                            <th>Local</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for venta in ventas %}
+                        <tr>
+                            <td>{{ venta.id }}</td>
+                            <td>{{ venta.local_nombre }}</td>
+                            <td>{{ venta.fecha.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td class="fw-bold text-success">${{ '{:,.2f}'.format(venta.total) }}</td>
+                            <td class="text-center">
+                                <!-- Botón Detalle (Abre Modal) -->
+                                <button type="button" class="btn btn-info btn-sm me-2 detalle-btn" 
+                                        data-bs-toggle="modal" data-bs-target="#detalleModal" 
+                                        data-id="{{ venta.id }}">
+                                    🔎 Detalles
+                                </button>
+                                
+                                <!-- Formulario Eliminar -->
+                                <form method="POST" action="{{ url_for('eliminar_venta', id_venta=venta.id) }}" 
+                                      class="d-inline" onsubmit="return confirm('¿Está seguro de que desea eliminar la Venta ID {{ venta.id }}? ESTO REVERTIRÁ EL STOCK.');">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        ❌ Eliminar y Revertir
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if not ventas %}
+            <div class="alert alert-warning text-center mt-3" role="alert">
+                No hay ventas registradas todavía.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- INCLUIR MODAL EXTERNO: Se carga una sola vez, pero contiene el JS que llama a Flask para obtener el contenido dinámico -->
+{% include 'ventas/detalle_modal.html' %}
+
+{% endblock %}
