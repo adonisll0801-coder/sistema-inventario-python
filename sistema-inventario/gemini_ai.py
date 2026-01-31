@@ -3,7 +3,7 @@ import requests
 import time
 
 # La clave API se deja vacía. El entorno de Canvas la proporcionará en tiempo de ejecución.
-API_KEY = "AIzaSyBedd71jCaL09QmTJS7bIViy6Udh0ZT4rc"
+API_KEY = "TU_CLAVE_AQUÍ"
 MODEL_NAME = "gemini-2.5-flash-preview-09-2025"
 API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent?key={API_KEY}"
 
@@ -105,4 +105,5 @@ def analizar_inventario(contexto_json, prompt_usuario):
             delay *= 2
 
     print("Error: Se superaron los reintentos para contactar a la API de Gemini.")
+
     return "Error: No se pudo contactar al servicio de análisis después de varios intentos."
